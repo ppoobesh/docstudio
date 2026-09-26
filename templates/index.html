@@ -1,18 +1,218 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document Studio Pro</title>
   
+  <!-- Bootstrap 5 CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  
+  <!-- Direct Inline CSS to guarantee 100% identical styling on Vercel & Localhost -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg-app: #f8fafc;
+      --surface-app: #ffffff;
+      --surface-card: #f1f5f9;
+      --border-subtle: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-blue: #0d6efd;
+      --accent-blue-hover: #0b5ed7;
+      --accent-glow: rgba(13, 110, 253, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-bs-theme="dark"] {
+      --bg-app: #0f172a;
+      --surface-app: #1e293b;
+      --surface-card: #182234;
+      --border-subtle: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      transition: background-color var(--transition-smooth), color var(--transition-smooth);
+    }
+
+    /* Capsule Tabs Styling */
+    .nav-tabs-custom {
+      border-bottom: none;
+      background-color: var(--surface-app);
+      padding: 6px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+    }
+
+    .nav-tabs-custom .nav-link {
+      border: none;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.88rem;
+      padding: 8px 18px;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+    }
+
+    .nav-tabs-custom .nav-link:hover {
+      color: var(--text-main);
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    [data-bs-theme="dark"] .nav-tabs-custom .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tabs-custom .nav-link.active {
+      background-color: var(--accent-blue) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* Workplace Main Surface */
+    .main-surface {
+      background-color: var(--surface-app);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
+    }
+
+    /* Drag & Drop Upload Zone */
+    .drop-zone {
+      border: 2px dashed var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.02);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent-blue);
+      background-color: var(--accent-glow);
+    }
+
+    /* Card Grid */
+    .doc-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 14px;
+      min-height: 220px;
+    }
+
+    .doc-card {
+      background: var(--surface-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .doc-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .doc-card.selected {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+
+    .doc-card .preview-stage {
+      height: 140px;
+      background: rgba(0, 0, 0, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    .doc-card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+      pointer-events: none;
+    }
+
+    .doc-card .card-footer-info {
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-card);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .doc-card .card-checkbox {
+      cursor: pointer;
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent-blue);
+    }
+
+    .sortable-ghost {
+      opacity: 0.25;
+      transform: scale(0.96);
+      border: 2px dashed var(--accent-blue) !important;
+    }
+
+    .cropper-stage-wrapper {
+      background: #000000;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      min-height: 480px;
+      max-height: 68vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .cropper-view-box {
+      outline: 2px solid var(--accent-blue) !important;
+    }
+    .cropper-line {
+      background-color: var(--accent-blue) !important;
+    }
+    .cropper-point {
+      background-color: #ffffff !important;
+      width: 8px !important;
+      height: 8px !important;
+      border-radius: 2px !important;
+      border: 1px solid #000000 !important;
+    }
+  </style>
 </head>
 <body class="py-4">
 
   <div class="container-xl">
+    <!-- Navbar Header Area -->
     <header class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
       <div class="d-flex align-items-center gap-3">
         <div class="bg-primary text-white p-2 rounded-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
@@ -26,12 +226,13 @@
 
       <div class="d-flex align-items-center gap-2">
         <button class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-2" id="themeToggleBtn">
-          <i class="bi bi-sun-fill" id="themeIcon"></i>
-          <span id="themeText">Light</span>
+          <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+          <span id="themeText">Dark</span>
         </button>
       </div>
     </header>
 
+    <!-- Capsule Navigation Tabs -->
     <div class="d-flex justify-content-center justify-content-md-start mb-3">
       <ul class="nav nav-tabs-custom" id="studioTabs" role="tablist">
         <li class="nav-item">
@@ -52,8 +253,12 @@
       </ul>
     </div>
 
+    <!-- Main Workplace Surface -->
     <div class="tab-content main-surface p-4 shadow-sm">
-      <!-- 1. MERGE -->
+      
+      <!-- ========================================== -->
+      <!-- TAB 1: MERGE DOCUMENTS                    -->
+      <!-- ========================================== -->
       <div class="tab-pane fade show active" id="mergePane" role="tabpanel">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div class="d-flex flex-wrap align-items-center gap-2">
@@ -73,14 +278,17 @@
           </div>
         </div>
 
+        <!-- Drop Upload Zone -->
         <div class="drop-zone mb-3" id="mergeDropZone">
           <i class="bi bi-files text-secondary fs-2 d-block mb-1"></i>
           <span class="fw-medium">Drag & drop PDF files or Images here</span>
           <span class="text-secondary d-block small">or click the "Add Files" button above</span>
         </div>
 
+        <!-- Card Grid -->
         <div id="mergeGrid" class="doc-card-grid p-2 mb-4"></div>
 
+        <!-- Output Settings -->
         <div class="border-top pt-3 row g-3 align-items-end">
           <div class="col-md-4">
             <label class="form-label small text-secondary fw-semibold">Output Filename</label>
@@ -101,7 +309,9 @@
         </div>
       </div>
 
-      <!-- 2. CONVERT -->
+      <!-- ========================================== -->
+      <!-- TAB 2: FORMAT CONVERSION HUB               -->
+      <!-- ========================================== -->
       <div class="tab-pane fade" id="convertPane" role="tabpanel">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div class="d-flex flex-wrap align-items-center gap-2">
@@ -129,7 +339,9 @@
         <div id="convertGrid" class="doc-card-grid p-2"></div>
       </div>
 
-      <!-- 3. CROP -->
+      <!-- ========================================== -->
+      <!-- TAB 3: SMART CROPPER                      -->
+      <!-- ========================================== -->
       <div class="tab-pane fade" id="cropPane" role="tabpanel">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
           <div class="d-flex flex-wrap align-items-center gap-2">
@@ -161,9 +373,11 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
+  <!-- Zoom & Inspection Modal -->
   <div class="modal fade" id="previewModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-body border-0 shadow">
@@ -178,6 +392,7 @@
     </div>
   </div>
 
+  <!-- Dynamic Toast Notification Container -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="actionToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
@@ -187,11 +402,13 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
   <script>
+    // Theme Engine (Initialized to Light Mode by default)
     const themeBtn = document.getElementById('themeToggleBtn');
     themeBtn.addEventListener('click', () => {
       const html = document.documentElement;
@@ -208,6 +425,7 @@
       new bootstrap.Toast(toastEl).show();
     }
 
+    // Sortable Card Initialization
     new Sortable(document.getElementById('mergeGrid'), {
       animation: 200,
       ghostClass: 'sortable-ghost',
@@ -222,6 +440,7 @@
       delayOnTouchOnly: true
     });
 
+    // File Drag-and-Drop Zones
     function setupDropZone(dropZoneId, fileInputId, targetGridId) {
       const dropZone = document.getElementById(dropZoneId);
       const fileInput = document.getElementById(fileInputId);
@@ -257,6 +476,7 @@
     setupDropZone('mergeDropZone', 'mergeFileInput', 'mergeGrid');
     setupDropZone('convertDropZone', 'convertFileInput', 'convertGrid');
 
+    // Upload & Render Card Elements
     async function uploadFiles(files, targetGridId) {
       if (!files.length) return;
       const formData = new FormData();
@@ -338,6 +558,7 @@
       return selected;
     }
 
+    // Merge Function
     async function executeMerge() {
       const cards = getSelectedCards('mergeGrid');
       if (!cards.length) return showToast('Please select at least one document.', true);
@@ -368,6 +589,7 @@
       }
     }
 
+    // Conversion Function
     async function executeConversion() {
       const cards = getSelectedCards('convertGrid');
       if (!cards.length) return showToast('Please select cards to convert.', true);
@@ -395,6 +617,7 @@
       }
     }
 
+    // Cropper Tool
     let cropper = null;
     let originalRawB64 = '';
 
